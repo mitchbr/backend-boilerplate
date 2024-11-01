@@ -11,6 +11,7 @@ export interface UserTable {
   username: string
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string | undefined, never>
+  deleted_at: ColumnType<Date, string | undefined, never>
 }
 
 export type User = Selectable<UserTable>
