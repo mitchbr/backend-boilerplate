@@ -45,6 +45,7 @@ userRouter.post('/', authRequest, async (req: Request, res: Response) => {
         username: username,
         updated_at: new Date().toISOString(),
       })
+      .execute()
     res.status(200).send({ message: "Successfully added user", id: id })
   } catch (err) {
     console.log(err)
@@ -52,7 +53,7 @@ userRouter.post('/', authRequest, async (req: Request, res: Response) => {
   }
 })
 
-userRouter.patch('/', authRequest, async (req: Request, res: Response) => {
+userRouter.patch('/:id', authRequest, async (req: Request, res: Response) => {
   // TODO: check fields are valid first
   const id = req.params.id
   try {
@@ -61,7 +62,6 @@ userRouter.patch('/', authRequest, async (req: Request, res: Response) => {
       .set(req.body)
       .where('id', '=', id)
       .executeTakeFirst()
-    console.log(result)
     res.status(200).send({ 
       message: "Successfully updated user", 
       id: id 
@@ -72,21 +72,20 @@ userRouter.patch('/', authRequest, async (req: Request, res: Response) => {
   }
 })
 
-userRouter.delete('/', authRequest, async (req: Request, res: Response) => {
-  // TODO: check fields are valid first
+userRouter.delete('/:id', authRequest, async (req: Request, res: Response) => {
   const id = req.params.id
   try {
     const result = await db
       .updateTable('users')
       .set({
-        // TODO: Wtf
+        // TODO: WTF?
         // deleted_at: new Date().toISOString()
       })
       .where('id', '=', id)
       .executeTakeFirst()
     console.log(result)
     res.status(200).send({ 
-      message: "Successfully updated user", 
+      message: "Successfully deleted user", 
       id: id 
     })
   } catch (err) {

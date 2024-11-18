@@ -7,9 +7,14 @@ services:
       POSTGRES_DB: ${POSTGRESDB_DATABASE}
     ports:
       - ${DB_LOCAL_PORT}:${DB_DOCKER_PORT}
+    volumes:
+      - db_data:/var/lib/postgresql/data
   app:
     container_name: app
     restart: always
     build: .
     ports:
       - ${NODE_LOCAL_PORT}:${NODE_DOCKER_PORT}
+
+volumes:
+  db_data: 

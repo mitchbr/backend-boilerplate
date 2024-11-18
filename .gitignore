@@ -26,3 +26,5 @@ dist-ssr
 .env*
 public
 cloudflared.deb
+
+db_backups

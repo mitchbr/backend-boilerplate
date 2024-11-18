@@ -11,6 +11,7 @@ export async function authRequest(req: Request, res: Response, next: NextFunctio
   const username = req.headers['username'];
   if (!token || !username) {
     res.status(401).send({message: "authentication failed"});
+    return
   }
 
   try {
@@ -21,8 +22,9 @@ export async function authRequest(req: Request, res: Response, next: NextFunctio
       .limit(1)
       .execute();
 
-      if (user === null) {
+      if (user.length === 0) {
         res.status(401).send({message: "authentication failed"});
+        return
       }
   } catch (err) {
     console.log(err);
@@ -30,7 +32,8 @@ export async function authRequest(req: Request, res: Response, next: NextFunctio
   }
 
   if (token !== process.env.API_KEY) {
-    res.status(401).send({message: "authentication failed"});
+    res.status(401).send({message: "authentication failed, bad key"});
+    return
   }
 
   next();

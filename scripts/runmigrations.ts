@@ -12,12 +12,12 @@ import {
   Migrator,
 } from 'kysely';
 import * as path from 'path';
+// import { db } from '../src/db';
 
 const __dirname = path.resolve();
 dotenv.config({path: path.join(__dirname, '../.env')});
 
-
-async function migrateToLatest() {
+function connectToDb() {
   const pool = new Pool({
     host: process.env.POSTGRESDB_LOCAL_HOST,
     port: parseInt(process.env.DB_LOCAL_PORT || "5432"),
@@ -33,6 +33,12 @@ async function migrateToLatest() {
   const db = new Kysely<Database>({
       dialect,
   })
+  return db
+}
+
+
+async function migrateToLatest() {
+  const db = connectToDb()
 
   const migrator = new Migrator({
     db,
@@ -62,4 +68,81 @@ async function migrateToLatest() {
   await db.destroy()
 }
 
-migrateToLatest()
+async function migrateDown() {
+  const db = connectToDb()
+
+  const migrator = new Migrator({
+    db,
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: path.join(__dirname, '../migrations'),
+    }),
+  })
+
+  const { error, results } = await migrator.migrateDown()
+
+  results?.forEach((it) => {
+    if (it.status === 'Success') {
+      console.log(`migration "${it.migrationName}" was executed down`)
+    } else if (it.status === 'Error') {
+      console.error(`failed to execute migration "${it.migrationName}"`)
+    }
+  })
+
+  if (error) {
+    console.error('failed to migrate')
+    console.error(error)
+    process.exit(1)
+  }
+
+  await db.destroy()
+}
+
+async function migrateTo(migration: string) {
+  const db = connectToDb()
+
+  const migrator = new Migrator({
+    db,
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      migrationFolder: path.join(__dirname, '../migrations'),
+    }),
+  })
+
+  const { error, results } = await migrator.migrateTo(migration)
+
+  results?.forEach((it) => {
+    if (it.status === 'Success') {
+      console.log(`migration "${it.migrationName}" was executed`)
+    } else if (it.status === 'Error') {
+      console.error(`failed to execute migration "${it.migrationName}"`)
+    }
+  })
+
+  if (error) {
+    console.error('failed to migrate')
+    console.error(error)
+    process.exit(1)
+  }
+
+  await db.destroy()
+}
+
+const command = process.argv[2]
+if (command === "down") {
+  console.log("Migrating down")
+  migrateDown()
+} else if (command === "to") {
+  const specifiedMigration = process.argv[3]
+  if (!specifiedMigration) {
+    console.log("Migration must be specified")
+  } else {
+    console.log(`Migrating to migration: ${specifiedMigration}`)
+    migrateTo(specifiedMigration)  
+  }
+} else {
+  console.log("Migrating to latest")
+  migrateToLatest()
+}
