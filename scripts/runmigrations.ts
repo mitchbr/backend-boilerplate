@@ -1,5 +1,8 @@
-// Run the following command while in /scripts to migrate:
-// npx tsx runmigrations.ts
+// Run this command while in /scripts
+// Migrations commands:
+//  - To Latest: npx tsx runmigrations.ts
+//  - Down: npx tsx runmigrations.ts down
+//  - To specific: npx tsx runmigrations.ts to <migration_name>
 
 import dotenv from "dotenv";
 import { Kysely, PostgresDialect } from 'kysely';
@@ -12,7 +15,6 @@ import {
   Migrator,
 } from 'kysely';
 import * as path from 'path';
-// import { db } from '../src/db';
 
 const __dirname = path.resolve();
 dotenv.config({path: path.join(__dirname, '../.env')});
